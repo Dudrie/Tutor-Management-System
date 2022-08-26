@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { ConsoleLogger } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { validateSync, ValidationError } from 'class-validator';
 import fs from 'fs';
@@ -23,7 +23,7 @@ export class StaticSettings {
     private readonly databaseConfig: DatabaseConfiguration;
     private readonly envConfig: EnvironmentConfig;
 
-    protected readonly logger = new Logger(StaticSettings.name);
+    protected readonly logger = new ConsoleLogger(StaticSettings.name);
 
     constructor() {
         this.config = this.loadConfigFile();
@@ -239,6 +239,7 @@ export class StaticSettings {
      */
     private getStringForError(error: ValidationError, depth: number = 1): string {
         const { property, children, constraints } = error;
+        const actualChildren = children ?? [];
         let tabs: string = '';
 
         for (let i = 0; i < depth; i++) {
@@ -247,8 +248,8 @@ export class StaticSettings {
 
         let message = `The following validation error(s) occured for the "${property}" property:`;
 
-        if (children.length > 0) {
-            for (const childError of children) {
+        if (actualChildren.length > 0) {
+            for (const childError of actualChildren) {
                 message += '\n' + tabs + this.getStringForError(childError, depth + 1);
             }
         } else {
